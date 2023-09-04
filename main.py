@@ -4,18 +4,33 @@ from dotenv import load_dotenv
 from discord.ext import commands
 import requests
 import sqlite3
+import mysql.connector
 
 # Credentials
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+USER = os.getenv('RDS_USER')
+PASS = os.getenv('RDS_PASSWORD')
+HOST = os.getenv('RDS_HOST')
+
+# AWS RDS database connection settings
+db_config = {
+    'user': USER,
+    'password': PASS,
+    'host': HOST,
+    'database': 'disc-golf-db',
+}
 
 # Create bot
 intents = discord.Intents.all();
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-# Connect to the SQLite database
-conn = sqlite3.connect('bag_data.db')
+conn = mysql.connector.connect(**db_config)
 cursor = conn.cursor()
+
+# # Connect to the SQLite database
+# conn = sqlite3.connect('bag_data.db')
+# cursor = conn.cursor()
 
 # Create a table to store user bags
 cursor.execute('''CREATE TABLE IF NOT EXISTS bags (
