@@ -135,6 +135,41 @@ async def add(ctx, *, input_string: str):
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
 
+# Command to add multiple discs to the user's bag with a semicolon delimiter
+@bot.command(name='addMultiple')
+async def add_multiple(ctx, *, input_string: str):
+    try:
+        # Remove spaces between discs, then split using a semicolon as the delimiter
+        disc_strings = input_string.split(';')
+
+        for disc_string in disc_strings:
+            # Split each disc string into individual fields
+            parts = [part.strip() for part in disc_string.split(',')]
+
+            # Check if there are enough parts (name, brand, plastic, speed, glide, turn, fade)
+            if len(parts) != 7:
+                await ctx.send(f"Invalid input: {disc_string}. Please provide disc name, brand, plastic, speed, glide, turn, and fade for each disc.")
+                continue
+
+            # Extract the individual fields
+            disc_name, brand, plastic, speed, glide, turn, fade = parts
+
+            # Convert speed, glide, turn, and fade to float
+            speed = float(speed)
+            glide = float(glide)
+            turn = float(turn)
+            fade = float(fade)
+
+            user_id = ctx.author.id
+            cursor.execute('''INSERT INTO bags VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                           (user_id, disc_name, brand, plastic, speed, glide, turn, fade))
+            conn.commit()
+            await ctx.send(f"Added {brand} {disc_name} to your bag.")
+
+    except Exception as e:
+        await ctx.send(f"An error occurred: {str(e)}")
+
+
 # Command to remove a disc from the user's bag
 @bot.command(name='remove')
 async def remove(ctx, disc_name):
