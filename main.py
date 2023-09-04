@@ -19,31 +19,40 @@ db_config = {
     'password': PASS,
     'host': HOST,
     'database': 'disc-golf-db',
+    'port': '3306'
 }
 
 # Create bot
 intents = discord.Intents.all();
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-conn = mysql.connector.connect(**db_config)
+#conn = mysql.connector.connect(db_config)
+conn = mysql.connector.connect(
+    host='discgolfdb.csysmaamsanu.us-east-1.rds.amazonaws.com',
+    user='admin',
+    password='Fz9rk3UF!whKaY7$',
+    database='discgolfdb'
+)
 cursor = conn.cursor()
+# Create a table to store user bags
+cursor.execute('''CREATE TABLE IF NOT EXISTS bags (
+                user_id TEXT,
+                disc_name TEXT,
+                brand TEXT,
+                plastic TEXT,
+                speed REAL,
+                glide REAL,
+                turn REAL,
+                fade REAL
+                )''')
+conn.commit()
+
 
 # # Connect to the SQLite database
 # conn = sqlite3.connect('bag_data.db')
 # cursor = conn.cursor()
 
-# Create a table to store user bags
-cursor.execute('''CREATE TABLE IF NOT EXISTS bags (
-                  user_id INTEGER,
-                  disc_name TEXT,
-                  brand TEXT,
-                  plastic TEXT,
-                  speed REAL,
-                  glide REAL,
-                  turn REAL,
-                  fade REAL
-                )''')
-conn.commit()
+
 
 # Startup Information
 @bot.event
@@ -55,7 +64,8 @@ async def on_ready():
 # Function to format and display a user's bag
 def format_bag(user_id):
     try:
-        cursor.execute('''SELECT * FROM bags WHERE user_id = ?''', (user_id,))
+        print(user_id)
+        cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
         bag_data = cursor.fetchall()
         print(bag_data)
         
@@ -108,6 +118,7 @@ def format_bag(user_id):
         
         return formatted_bag
     except Exception as e:
+        print(e)
         return f"An error occurred: {str(e)}"
 
 
@@ -150,7 +161,10 @@ async def add(ctx, *, input_string: str):
         fade = float(fade)
         
         user_id = ctx.author.id
-        cursor.execute('''INSERT INTO bags VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+        print(user_id)
+        print('''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''',
+                       (user_id, disc_name, brand, plastic, speed, glide, turn, fade))
+        cursor.execute('''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''',
                        (user_id, disc_name, brand, plastic, speed, glide, turn, fade))
         conn.commit()
         await ctx.send(f"Added {brand} {disc_name} to your bag.")
@@ -183,7 +197,7 @@ async def add_multiple(ctx, *, input_string: str):
             fade = float(fade)
 
             user_id = ctx.author.id
-            cursor.execute('''INSERT INTO bags VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+            cursor.execute('''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''',
                            (user_id, disc_name, brand, plastic, speed, glide, turn, fade))
             conn.commit()
             await ctx.send(f"Added {brand} {disc_name} to your bag.")
@@ -194,7 +208,7 @@ async def add_multiple(ctx, *, input_string: str):
 # Function to get a summary of the discs in the user's bag
 def bag_summary(user_id):
     try:
-        cursor.execute('''SELECT * FROM bags WHERE user_id = ?''', (user_id,))
+        cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
         bag_data = cursor.fetchall()
 
         if not bag_data:
@@ -273,7 +287,7 @@ async def view_bag(ctx, username: str):
             return
 
         user_id = user.id
-        cursor.execute('''SELECT * FROM bags WHERE user_id = ?''', (user_id,))
+        cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
         bag_data = cursor.fetchall()
 
         if not bag_data:
@@ -292,7 +306,7 @@ async def view_bag(ctx, username: str):
 async def remove(ctx, *, disc_name):
     try:
         user_id = ctx.author.id
-        cursor.execute('''DELETE FROM bags WHERE user_id = ? AND lower(disc_name) = ?''', (user_id, disc_name.lower()))
+        cursor.execute('''DELETE FROM bags WHERE user_id = %s AND lower(disc_name) = %s''', (user_id, disc_name.lower()))
         conn.commit()
         await ctx.send(f"Removed {disc_name} from your bag.")
 
