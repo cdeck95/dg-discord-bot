@@ -302,7 +302,7 @@ async def view_bag(ctx, username: str):
 
 
 # Command to remove a disc from the user's bag (accepts multiple words in disc name)
-@bot.command(name='remove')
+@bot.command(name='removeDisc')
 async def remove(ctx, *, disc_name):
     try:
         user_id = ctx.author.id
