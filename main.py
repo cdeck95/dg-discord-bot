@@ -13,24 +13,15 @@ USER = os.getenv('RDS_USER')
 PASS = os.getenv('RDS_PASSWORD')
 HOST = os.getenv('RDS_HOST')
 
-# AWS RDS database connection settings
-db_config = {
-    'user': USER,
-    'password': PASS,
-    'host': HOST,
-    'database': 'disc-golf-db',
-    'port': '3306'
-}
-
 # Create bot
 intents = discord.Intents.all();
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 #conn = mysql.connector.connect(db_config)
 conn = mysql.connector.connect(
-    host='discgolfdb.csysmaamsanu.us-east-1.rds.amazonaws.com',
-    user='admin',
-    password='Fz9rk3UF!whKaY7$',
+    host=HOST,
+    user=USER,
+    password=PASS,
     database='discgolfdb'
 )
 cursor = conn.cursor()
