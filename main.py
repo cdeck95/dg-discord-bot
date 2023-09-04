@@ -272,16 +272,18 @@ async def view_bag(ctx, username: str):
         await ctx.send(f"An error occurred: {str(e)}")
 
 
-# Command to remove a disc from the user's bag
+# Command to remove a disc from the user's bag (accepts multiple words in disc name)
 @bot.command(name='remove')
-async def remove(ctx, disc_name):
+async def remove(ctx, *, disc_name):
     try:
         user_id = ctx.author.id
         cursor.execute('''DELETE FROM bags WHERE user_id = ? AND lower(disc_name) = ?''', (user_id, disc_name.lower()))
         conn.commit()
         await ctx.send(f"Removed {disc_name} from your bag.")
+
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
+
     
 # Run the bot
 bot.run(TOKEN)
