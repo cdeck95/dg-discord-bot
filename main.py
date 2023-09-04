@@ -235,6 +235,35 @@ async def bag_summary_cmd(ctx):
     summary = bag_summary(user_id)
     await ctx.send(f"**{ctx.author.display_name}'s Bag Summary**\n\n{summary}")
 
+# Command to view someone else's bag by specifying their username
+@bot.command(name='bag')
+async def view_bag(ctx, username: str):
+    try:
+        # Find the user by username
+        user = None
+        for member in ctx.guild.members:
+            if member.name == username:
+                user = member
+                break
+
+        if not user:
+            await ctx.send(f"User '{username}' not found.")
+            return
+
+        user_id = user.id
+        cursor.execute('''SELECT * FROM bags WHERE user_id = ?''', (user_id,))
+        bag_data = cursor.fetchall()
+
+        if not bag_data:
+            await ctx.send(f"{user.display_name}'s bag is empty.")
+            return
+
+        bag = format_bag(user_id)
+        await ctx.send(f"**{user.display_name}'s Bag**\n\n{bag}")
+
+    except Exception as e:
+        await ctx.send(f"An error occurred: {str(e)}")
+
 
 # Command to remove a disc from the user's bag
 @bot.command(name='remove')
