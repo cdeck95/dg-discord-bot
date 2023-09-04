@@ -102,7 +102,14 @@ async def mybag(ctx):
     try:
         user_id = ctx.author.id
         bag = format_bag(user_id)
-        await ctx.send(f"**{ctx.author.display_name}'s Bag**\n\n{bag}")
+
+        # Split the bag summary into multiple messages if it exceeds 2000 characters
+        if len(bag) > 2000:
+            bag_parts = [bag[i:i+1900] for i in range(0, len(bag), 1900)]  # Split into parts
+            for i, part in enumerate(bag_parts):
+                await ctx.send(f"**{ctx.author.display_name}'s Bag (Part {i+1})**\n\n{part}")
+        else:
+            await ctx.send(f"**{ctx.author.display_name}'s Bag**\n\n{bag}")
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
 
