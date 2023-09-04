@@ -169,6 +169,72 @@ async def add_multiple(ctx, *, input_string: str):
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
 
+# Function to get a summary of the discs in the user's bag
+def bag_summary(user_id):
+    try:
+        cursor.execute('''SELECT * FROM bags WHERE user_id = ?''', (user_id,))
+        bag_data = cursor.fetchall()
+
+        if not bag_data:
+            return "Your bag is empty."
+
+        disc_types = {
+            'Distance Drivers': 0,
+            'Fairway Drivers': 0,
+            'Mid-Ranges': 0,
+            'Putt/Approach': 0
+        }
+
+        disc_categories = {
+            'Understable': 0,
+            'Neutral': 0,
+            'Stable': 0,
+            'Overstable': 0
+        }
+
+        for disc in bag_data:
+            stability = disc[6] + disc[7]
+            speed = disc[4]
+            if speed > 8:
+                type = 'Distance Drivers'
+            elif speed > 5:
+                type = 'Fairway Drivers'
+            elif speed > 4:
+                type = 'Mid-Ranges'
+            else:
+                type = 'Putt/Approach'
+            if stability < 0:
+                category = 'Understable'
+            elif stability == 0:
+                category = 'Neutral'
+            elif stability > 0 and stability <= 2:
+                category = 'Stable'
+            else:
+                category = 'Overstable'
+
+            disc_types[type] += 1
+            disc_categories[category] += 1
+
+        summary = f"**Disc Types in Your Bag:**\n"
+        for disc_type, count in disc_types.items():
+            summary += f"{disc_type}: {count}\n"
+
+        summary += "\n**Disc Categories in Your Bag:**\n"
+        for category, count in disc_categories.items():
+            summary += f"{category}: {count}\n"
+
+        return summary
+
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
+# Command to get a summary of the discs in the user's bag
+@bot.command(name='bagSummary')
+async def bag_summary_cmd(ctx):
+    user_id = ctx.author.id
+    summary = bag_summary(user_id)
+    await ctx.send(f"**{ctx.author.display_name}'s Bag Summary**\n\n{summary}")
+
 
 # Command to remove a disc from the user's bag
 @bot.command(name='remove')
