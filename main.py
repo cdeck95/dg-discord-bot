@@ -13,6 +13,9 @@ USER = os.getenv('RDS_USER')
 PASS = os.getenv('RDS_PASSWORD')
 HOST = os.getenv('RDS_HOST')
 
+# print(HOST)
+# print(USER)
+
 # Create bot
 intents = discord.Intents.all();
 bot = commands.Bot(command_prefix='!', intents=intents)
