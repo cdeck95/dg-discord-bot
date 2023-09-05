@@ -86,7 +86,12 @@ def format_bag(user_id, ctx):
                 bag['Putt/Approach'].append(disc[1])
 
         embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag")
-        embed.set_thumbnail(url=ctx.author.avatar.url)  # Set thumbnail as user's profile picture
+        # Check if the user has a profile picture and set the thumbnail accordingly
+        if ctx.author.avatar:
+            embed.set_thumbnail(url=ctx.author.avatar.url)
+        else:
+            # If the user doesn't have a profile picture, you can set it to a default image or the bot's avatar
+            embed.set_thumbnail(url=bot.user.avatar.url)
 
         for category, discs in bag.items():
             if discs:
@@ -150,8 +155,12 @@ def format_bag_detailed(user_id, ctx):
                 bag['Putt/Approach'].append(disc_info)
 
         embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag - Detailed")
-        embed.set_thumbnail(url=ctx.author.avatar.url)  # Set thumbnail as user's profile picture
-
+        # Check if the user has a profile picture and set the thumbnail accordingly
+        if ctx.author.avatar:
+            embed.set_thumbnail(url=ctx.author.avatar.url)
+        else:
+            # If the user doesn't have a profile picture, you can set it to a default image or the bot's avatar
+            embed.set_thumbnail(url=bot.user.avatar.url)
         for category, discs in bag.items():
             if discs:
                 formatted_discs = "\n".join([f"{i}. {disc}" for i, disc in enumerate(discs, start=1)])
@@ -329,7 +338,12 @@ async def view_bag(ctx, username: str):
         if not bag_data:
             # Create an embed message for an empty bag
             embed = discord.Embed(title=f"{user.display_name}'s Bag", color=0xff0000)
-            embed.set_thumbnail(url=user.avatar.url)
+            # Check if the user has a profile picture and set the thumbnail accordingly
+            if ctx.author.avatar:
+                embed.set_thumbnail(url=ctx.author.avatar.url)
+            else:
+                # If the user doesn't have a profile picture, you can set it to a default image or the bot's avatar
+                embed.set_thumbnail(url=bot.user.avatar.url)
             embed.add_field(name="Empty Bag", value="This bag is empty.", inline=False)
             await ctx.send(embed=embed)
             return
