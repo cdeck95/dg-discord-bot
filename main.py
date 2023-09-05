@@ -54,14 +54,15 @@ async def on_ready():
     print('Connected to bot: {}'.format(bot.user.name))
     print('Bot ID: {}'.format(bot.user.id))
 
-# Function to format and display a user's bag
-def format_bag(user_id):
+
+# Function to format and display a user's bag as an embedded message
+def format_bag(user_id, ctx):
     try:
         cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
         bag_data = cursor.fetchall()
 
         if not bag_data:
-            return "Your bag is empty."
+            return discord.Embed(description="Your bag is empty.")
 
         bag = {
             'Distance Drivers': [],
@@ -81,85 +82,37 @@ def format_bag(user_id):
             else:
                 bag['Putt/Approach'].append(disc[1])
 
-        formatted_bag = ''
+        embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag")
+        embed.set_thumbnail(url=ctx.author.avatar.url)  # Set thumbnail as user's profile picture
+
         for category, discs in bag.items():
             if discs:
-                formatted_bag += f"**{category}**:\n\n"
-                formatted_bag += ', '.join(discs) + '\n\n'  # Comma-separated disc names
+                embed.add_field(name=category, value=', '.join(discs), inline=False)  # Add a field for each category
 
-        return formatted_bag
+        return embed
     except Exception as e:
-        return f"An error occurred: {str(e)}"
+        return discord.Embed(description=f"An error occurred: {str(e)}")
 
-    
-# # Function to format and display a user's bag with details
-# def format_bag_detailed(user_id):
-#     try:
-#         print(user_id)
-#         cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
-#         bag_data = cursor.fetchall()
-#         print(bag_data)
-        
-#         if not bag_data:
-#             return "Your bag is empty."
+# Command to display user's bag
+@bot.command(name='mybag')
+async def mybag(ctx):
+    try:
+        user_id = ctx.author.id
+        embed = format_bag(user_id, ctx)
 
-#         bag = {
-#             'Distance Drivers': [],
-#             'Fairway Drivers': [],
-#             'Mid-Ranges': [],
-#             'Putt/Approach': []
-#         }
+        # Send the embedded message
+        await ctx.send(embed=embed)
+    except Exception as e:
+        await ctx.send(f"An error occurred: {str(e)}")
 
-#         for disc in bag_data:
-            
-#             print(disc[1])
-#             print(disc[2])
-#             print(disc[3])
-#             print(disc[4])
-#             print(disc[5])
-#             print(disc[6])
-#             print(disc[7])
-#             stability = disc[6] + disc[7]
-#             print(stability)
-#             speed = disc[4]
-#             if stability < 0:
-#                 category = 'Understable'
-#             elif stability == 0:
-#                 category = 'Neutral'
-#             elif stability >= 0 and stability <= 2:
-#                 category = 'Stable'
-#             else:
-#                 category = 'Overstable'
-            
-#             print(category)
-#             disc_info = f"{disc[1]} [{disc[2]}] - Plastic: {disc[3]}, Speed: {disc[4]}, Glide: {disc[5]}, Turn: {disc[6]}, Fade: {disc[7]} ({category})"
-#             if speed > 8:
-#                 bag['Distance Drivers'].append(disc_info)
-#             elif speed > 5:
-#                 bag['Fairway Drivers'].append(disc_info)
-#             elif speed > 4:
-#                 bag['Mid-Ranges'].append(disc_info)
-#             else:
-#                 bag['Putt/Approach'].append(disc_info)
-
-#         formatted_bag = ''
-#         for category, discs in bag.items():
-#             formatted_bag += f"**{category}**:\n\n"
-#             formatted_bag += '\n'.join(discs) + '\n\n'
-        
-#         return formatted_bag
-#     except Exception as e:
-#         print(e)
-#         return f"An error occurred: {str(e)}"
-
-# Function to format and display a user's bag with details in a numbered bulleted list
-def format_bag_detailed(user_id):
+# Function to format and display a user's bag with details in an embedded message
+def format_bag_detailed(user_id, ctx):
     try:
         cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
         bag_data = cursor.fetchall()
         
         if not bag_data:
-            return "Your bag is empty."
+            return discord.Embed(description="Your bag is empty.")
 
         bag = {
             'Distance Drivers': [],
@@ -190,49 +143,27 @@ def format_bag_detailed(user_id):
             else:
                 bag['Putt/Approach'].append(disc_info)
 
-        formatted_bag = ''
+        embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag - Detailed")
+        embed.set_thumbnail(url=ctx.author.avatar.url)  # Set thumbnail as user's profile picture
+
         for category, discs in bag.items():
-            formatted_bag += f"**{category}**:\n\n"
-            for i, disc in enumerate(discs, start=1):
-                formatted_bag += f"{i}. {disc}\n"
-            formatted_bag += '\n'
-        
-        return formatted_bag
+            if discs:
+                formatted_discs = "\n".join([f"{i}. {disc}" for i, disc in enumerate(discs, start=1)])
+                embed.add_field(name=category, value=formatted_discs, inline=False)  # Add a field for each category
+
+        return embed
     except Exception as e:
-        return f"An error occurred: {str(e)}"
+        return discord.Embed(description=f"An error occurred: {str(e)}")
 
-
-# Command to display user's bag
-@bot.command(name='mybag')
-async def mybag(ctx):
-    try:
-        user_id = ctx.author.id
-        bag = format_bag(user_id)
-
-        # Split the bag summary into multiple messages if it exceeds 2000 characters
-        if len(bag) > 2000:
-            bag_parts = [bag[i:i+1900] for i in range(0, len(bag), 1900)]  # Split into parts
-            for i, part in enumerate(bag_parts):
-                await ctx.send(f"**{ctx.author.display_name}'s Bag (Part {i+1})**\n\n{part}")
-        else:
-            await ctx.send(f"**{ctx.author.display_name}'s Bag**\n\n{bag}")
-    except Exception as e:
-        await ctx.send(f"An error occurred: {str(e)}")
-
-# Command to display user's bag
+# Command to display user's detailed bag
 @bot.command(name='mybagdetailed')
-async def mybag(ctx):
+async def mybagdetailed(ctx):
     try:
         user_id = ctx.author.id
-        bag = format_bag_detailed(user_id)
+        embed = format_bag_detailed(user_id, ctx)
 
-        # Split the bag summary into multiple messages if it exceeds 2000 characters
-        if len(bag) > 2000:
-            bag_parts = [bag[i:i+1900] for i in range(0, len(bag), 1900)]  # Split into parts
-            for i, part in enumerate(bag_parts):
-                await ctx.send(f"**{ctx.author.display_name}'s Bag (Part {i+1})**\n\n{part}")
-        else:
-            await ctx.send(f"**{ctx.author.display_name}'s Bag**\n\n{bag}")
+        # Send the embedded message
+        await ctx.send(embed=embed)
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
 
@@ -302,14 +233,14 @@ async def add_multiple(ctx, *, input_string: str):
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
 
-# Function to get a summary of the discs in the user's bag
-def bag_summary(user_id):
+# Function to get a summary of the discs in the user's bag as an embedded message
+def bag_summary(user_id, ctx):
     try:
         cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
         bag_data = cursor.fetchall()
 
         if not bag_data:
-            return "Your bag is empty."
+            return discord.Embed(description="Your bag is empty.")
 
         disc_types = {
             'Distance Drivers': 0,
@@ -348,25 +279,27 @@ def bag_summary(user_id):
             disc_types[type] += 1
             disc_categories[category] += 1
 
-        summary = f"**Disc Types in Your Bag:**\n"
+        embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag Summary")
+
         for disc_type, count in disc_types.items():
-            summary += f"{disc_type}: {count}\n"
-
-        summary += "\n**Disc Categories in Your Bag:**\n"
+            embed.add_field(name=disc_type, value=count, inline=True)
         for category, count in disc_categories.items():
-            summary += f"{category}: {count}\n"
+            embed.add_field(name=category, value=count, inline=True)
 
-        return summary
+        return embed
 
     except Exception as e:
-        return f"An error occurred: {str(e)}"
+        return discord.Embed(description=f"An error occurred: {str(e)}")
 
 # Command to get a summary of the discs in the user's bag
 @bot.command(name='bagSummary')
 async def bag_summary_cmd(ctx):
-    user_id = ctx.author.id
-    summary = bag_summary(user_id)
-    await ctx.send(f"**{ctx.author.display_name}'s Bag Summary**\n\n{summary}")
+    try:
+        user_id = ctx.author.id
+        embed = bag_summary(user_id, ctx)
+        await ctx.send(embed=embed)
+    except Exception as e:
+        await ctx.send(f"An error occurred: {str(e)}")
 
 # Command to view someone else's bag by specifying their username
 @bot.command(name='bag')
@@ -388,11 +321,26 @@ async def view_bag(ctx, username: str):
         bag_data = cursor.fetchall()
 
         if not bag_data:
-            await ctx.send(f"{user.display_name}'s bag is empty.")
+            # Create an embed message for an empty bag
+            embed = discord.Embed(title=f"{user.display_name}'s Bag", color=0xff0000)
+            embed.set_thumbnail(url=user.avatar.url)
+            embed.add_field(name="Empty Bag", value="This bag is empty.", inline=False)
+            await ctx.send(embed=embed)
             return
 
-        bag = format_bag(user_id)
-        await ctx.send(f"**{user.display_name}'s Bag**\n\n{bag}")
+
+        # Create an embed message
+        embed = discord.Embed(title=f"{user.display_name}'s Bag", color=0x00ff00)
+
+        # Set the thumbnail to the user's profile picture
+        embed.set_thumbnail(url=user.avatar.url)
+
+        # Loop through each category and add it as a field in the embed
+        for category, item_count in bag_data:
+            embed.add_field(name=category, value=f"Items: {item_count}", inline=False)
+
+        # Send the embed message
+        await ctx.send(embed=embed)
 
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
