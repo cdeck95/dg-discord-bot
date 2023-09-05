@@ -328,18 +328,31 @@ async def view_bag(ctx, username: str):
             await ctx.send(embed=embed)
             return
 
+        bag = {
+            'Distance Drivers': [],
+            'Fairway Drivers': [],
+            'Mid-Ranges': [],
+            'Putt/Approach': []
+        }
 
-        # Create an embed message
-        embed = discord.Embed(title=f"{user.display_name}'s Bag", color=0x00ff00)
+        for disc in bag_data:
+            speed = disc[4]
+            if speed > 8:
+                bag['Distance Drivers'].append(disc[2])  # Add disc name to the category
+            elif speed > 5:
+                bag['Fairway Drivers'].append(disc[2])
+            elif speed > 4:
+                bag['Mid-Ranges'].append(disc[2])
+            else:
+                bag['Putt/Approach'].append(disc[2])
 
-        # Set the thumbnail to the user's profile picture
-        embed.set_thumbnail(url=user.avatar.url)
+        embed = discord.Embed(title=f"{user.display_name}'s Bag")
+        embed.set_thumbnail(url=user.avatar.url)  # Set thumbnail as user's profile picture
 
-        # Loop through each category and add it as a field in the embed
-        for category, item_count in bag_data:
-            embed.add_field(name=category, value=f"Items: {item_count}", inline=False)
+        for category, discs in bag.items():
+            if discs:
+                embed.add_field(name=category, value=', '.join(discs), inline=False)  # Add a field for each category
 
-        # Send the embed message
         await ctx.send(embed=embed)
 
     except Exception as e:
