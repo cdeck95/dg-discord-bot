@@ -157,9 +157,11 @@ def format_bag_detailed(user_id, ctx):
         embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag - Detailed")
         # Check if the user has a profile picture and set the thumbnail accordingly
         if ctx.author.avatar:
+            print("has avatar")
             embed.set_thumbnail(url=ctx.author.avatar.url)
         else:
             # If the user doesn't have a profile picture, you can set it to a default image or the bot's avatar
+            print("does not have avatar")
             embed.set_thumbnail(url=bot.user.avatar.url)
         for category, discs in bag.items():
             if discs:
@@ -339,14 +341,19 @@ async def view_bag(ctx, username: str):
             # Create an embed message for an empty bag
             embed = discord.Embed(title=f"{user.display_name}'s Bag", color=0xff0000)
             # Check if the user has a profile picture and set the thumbnail accordingly
-            if ctx.author.avatar:
-                embed.set_thumbnail(url=ctx.author.avatar.url)
+            if user.avatar:
+                print("has avatar")
+                embed.set_thumbnail(url=user.avatar)
             else:
+                print("does not have avatar")
                 # If the user doesn't have a profile picture, you can set it to a default image or the bot's avatar
-                embed.set_thumbnail(url=bot.user.avatar.url)
+                embed.set_thumbnail(url=ctx.bot.user.avatar.url)
             embed.add_field(name="Empty Bag", value="This bag is empty.", inline=False)
             await ctx.send(embed=embed)
             return
+
+        # Sort the bag_data by speed in descending order (highest speed first)
+        bag_data.sort(key=lambda x: x[4], reverse=True)
 
         bag = {
             'Distance Drivers': [],
@@ -358,16 +365,22 @@ async def view_bag(ctx, username: str):
         for disc in bag_data:
             speed = disc[4]
             if speed > 8:
-                bag['Distance Drivers'].append(disc[2])  # Add disc name to the category
+                bag['Distance Drivers'].append(disc[1])  # Add disc name to the category
             elif speed > 5:
-                bag['Fairway Drivers'].append(disc[2])
+                bag['Fairway Drivers'].append(disc[1])
             elif speed > 4:
-                bag['Mid-Ranges'].append(disc[2])
+                bag['Mid-Ranges'].append(disc[1])
             else:
-                bag['Putt/Approach'].append(disc[2])
+                bag['Putt/Approach'].append(disc[1])
 
         embed = discord.Embed(title=f"{user.display_name}'s Bag")
-        embed.set_thumbnail(url=user.avatar.url)  # Set thumbnail as user's profile picture
+        if user.avatar:
+            print("has avatar")
+            embed.set_thumbnail(url=user.avatar)
+        else:
+            print("does not have avatar")
+            # If the user doesn't have a profile picture, you can set it to a default image or the bot's avatar
+            embed.set_thumbnail(url=ctx.bot.user.avatar.url)
 
         for category, discs in bag.items():
             if discs:
