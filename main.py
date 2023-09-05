@@ -54,14 +54,109 @@ async def on_ready():
     print('Connected to bot: {}'.format(bot.user.name))
     print('Bot ID: {}'.format(bot.user.id))
 
-    
 # Function to format and display a user's bag
 def format_bag(user_id):
     try:
-        print(user_id)
         cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
         bag_data = cursor.fetchall()
-        print(bag_data)
+
+        if not bag_data:
+            return "Your bag is empty."
+
+        bag = {
+            'Distance Drivers': [],
+            'Fairway Drivers': [],
+            'Mid-Ranges': [],
+            'Putt/Approach': []
+        }
+
+        for disc in bag_data:
+            speed = disc[4]
+            if speed > 8:
+                bag['Distance Drivers'].append(disc[1])  # Add disc name to the category
+            elif speed > 5:
+                bag['Fairway Drivers'].append(disc[1])
+            elif speed > 4:
+                bag['Mid-Ranges'].append(disc[1])
+            else:
+                bag['Putt/Approach'].append(disc[1])
+
+        formatted_bag = ''
+        for category, discs in bag.items():
+            if discs:
+                formatted_bag += f"**{category}**:\n\n"
+                formatted_bag += ', '.join(discs) + '\n\n'  # Comma-separated disc names
+
+        return formatted_bag
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
+    
+# # Function to format and display a user's bag with details
+# def format_bag_detailed(user_id):
+#     try:
+#         print(user_id)
+#         cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
+#         bag_data = cursor.fetchall()
+#         print(bag_data)
+        
+#         if not bag_data:
+#             return "Your bag is empty."
+
+#         bag = {
+#             'Distance Drivers': [],
+#             'Fairway Drivers': [],
+#             'Mid-Ranges': [],
+#             'Putt/Approach': []
+#         }
+
+#         for disc in bag_data:
+            
+#             print(disc[1])
+#             print(disc[2])
+#             print(disc[3])
+#             print(disc[4])
+#             print(disc[5])
+#             print(disc[6])
+#             print(disc[7])
+#             stability = disc[6] + disc[7]
+#             print(stability)
+#             speed = disc[4]
+#             if stability < 0:
+#                 category = 'Understable'
+#             elif stability == 0:
+#                 category = 'Neutral'
+#             elif stability >= 0 and stability <= 2:
+#                 category = 'Stable'
+#             else:
+#                 category = 'Overstable'
+            
+#             print(category)
+#             disc_info = f"{disc[1]} [{disc[2]}] - Plastic: {disc[3]}, Speed: {disc[4]}, Glide: {disc[5]}, Turn: {disc[6]}, Fade: {disc[7]} ({category})"
+#             if speed > 8:
+#                 bag['Distance Drivers'].append(disc_info)
+#             elif speed > 5:
+#                 bag['Fairway Drivers'].append(disc_info)
+#             elif speed > 4:
+#                 bag['Mid-Ranges'].append(disc_info)
+#             else:
+#                 bag['Putt/Approach'].append(disc_info)
+
+#         formatted_bag = ''
+#         for category, discs in bag.items():
+#             formatted_bag += f"**{category}**:\n\n"
+#             formatted_bag += '\n'.join(discs) + '\n\n'
+        
+#         return formatted_bag
+#     except Exception as e:
+#         print(e)
+#         return f"An error occurred: {str(e)}"
+
+# Function to format and display a user's bag with details in a numbered bulleted list
+def format_bag_detailed(user_id):
+    try:
+        cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
+        bag_data = cursor.fetchall()
         
         if not bag_data:
             return "Your bag is empty."
@@ -74,16 +169,7 @@ def format_bag(user_id):
         }
 
         for disc in bag_data:
-            
-            print(disc[1])
-            print(disc[2])
-            print(disc[3])
-            print(disc[4])
-            print(disc[5])
-            print(disc[6])
-            print(disc[7])
             stability = disc[6] + disc[7]
-            print(stability)
             speed = disc[4]
             if stability < 0:
                 category = 'Understable'
@@ -94,7 +180,6 @@ def format_bag(user_id):
             else:
                 category = 'Overstable'
             
-            print(category)
             disc_info = f"{disc[1]} [{disc[2]}] - Plastic: {disc[3]}, Speed: {disc[4]}, Glide: {disc[5]}, Turn: {disc[6]}, Fade: {disc[7]} ({category})"
             if speed > 8:
                 bag['Distance Drivers'].append(disc_info)
@@ -108,11 +193,12 @@ def format_bag(user_id):
         formatted_bag = ''
         for category, discs in bag.items():
             formatted_bag += f"**{category}**:\n\n"
-            formatted_bag += '\n'.join(discs) + '\n\n'
+            for i, disc in enumerate(discs, start=1):
+                formatted_bag += f"{i}. {disc}\n"
+            formatted_bag += '\n'
         
         return formatted_bag
     except Exception as e:
-        print(e)
         return f"An error occurred: {str(e)}"
 
 
@@ -122,6 +208,23 @@ async def mybag(ctx):
     try:
         user_id = ctx.author.id
         bag = format_bag(user_id)
+
+        # Split the bag summary into multiple messages if it exceeds 2000 characters
+        if len(bag) > 2000:
+            bag_parts = [bag[i:i+1900] for i in range(0, len(bag), 1900)]  # Split into parts
+            for i, part in enumerate(bag_parts):
+                await ctx.send(f"**{ctx.author.display_name}'s Bag (Part {i+1})**\n\n{part}")
+        else:
+            await ctx.send(f"**{ctx.author.display_name}'s Bag**\n\n{bag}")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {str(e)}")
+
+# Command to display user's bag
+@bot.command(name='mybagdetailed')
+async def mybag(ctx):
+    try:
+        user_id = ctx.author.id
+        bag = format_bag_detailed(user_id)
 
         # Split the bag summary into multiple messages if it exceeds 2000 characters
         if len(bag) > 2000:
