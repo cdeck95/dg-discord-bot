@@ -18,7 +18,7 @@ HOST = os.getenv('RDS_HOST')
 
 # Create bot
 intents = discord.Intents.all();
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents, case_insensitive=True)
 
 #conn = mysql.connector.connect(db_config)
 conn = mysql.connector.connect(
