@@ -71,6 +71,9 @@ def format_bag(user_id, ctx):
             'Putt/Approach': []
         }
 
+        # Sort the bag_data by speed in descending order (highest speed first)
+        bag_data.sort(key=lambda x: x[4], reverse=True)
+
         for disc in bag_data:
             speed = disc[4]
             if speed > 8:
@@ -110,7 +113,7 @@ def format_bag_detailed(user_id, ctx):
     try:
         cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
         bag_data = cursor.fetchall()
-        
+
         if not bag_data:
             return discord.Embed(description="Your bag is empty.")
 
@@ -120,6 +123,9 @@ def format_bag_detailed(user_id, ctx):
             'Mid-Ranges': [],
             'Putt/Approach': []
         }
+
+        # Sort the bag_data by speed in descending order (highest speed first)
+        bag_data.sort(key=lambda x: x[4], reverse=True)
 
         for disc in bag_data:
             stability = disc[6] + disc[7]
@@ -132,7 +138,7 @@ def format_bag_detailed(user_id, ctx):
                 category = 'Stable'
             else:
                 category = 'Overstable'
-            
+
             disc_info = f"{disc[1]} [{disc[2]}] - Plastic: {disc[3]}, Speed: {disc[4]}, Glide: {disc[5]}, Turn: {disc[6]}, Fade: {disc[7]} ({category})"
             if speed > 8:
                 bag['Distance Drivers'].append(disc_info)
