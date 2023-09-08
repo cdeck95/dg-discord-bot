@@ -3,8 +3,8 @@ import discord
 from dotenv import load_dotenv
 from discord.ext import commands
 import requests
-import sqlite3
 import mysql.connector
+import mysql.connector.pooling  # Import the pooling module
 
 # Credentials
 load_dotenv()
@@ -20,6 +20,43 @@ HOST = os.getenv('RDS_HOST')
 intents = discord.Intents.all();
 bot = commands.Bot(command_prefix='!', intents=intents, case_insensitive=True)
 
+# Define a function to create a MySQL connection pool
+def create_connection_pool():
+    return mysql.connector.pooling.MySQLConnectionPool(
+        pool_name="my_pool",
+        pool_size=5,  # You can adjust this value as needed
+        user=USER,
+        password=PASS,
+        host=HOST,
+        database='discgolfdb'
+    )
+
+# Initialize the connection pool
+connection_pool = create_connection_pool()
+
+# Function to get a MySQL connection from the pool
+def get_mysql_connection():
+    return connection_pool.get_connection()
+
+# Function to ping the MySQL server periodically to keep the connection alive
+def ping_mysql_server():
+    while True:
+        try:
+            connection = get_mysql_connection()
+            connection.ping(reconnect=True)
+            connection.close()
+        except mysql.connector.Error as err:
+            print(f"Error pinging MySQL server: {err}")
+        time.sleep(3600)  # Ping every hour
+
+# Start a separate thread to ping the MySQL server
+import threading
+import time
+
+ping_thread = threading.Thread(target=ping_mysql_server)
+ping_thread.daemon = True
+ping_thread.start()
+
 #conn = mysql.connector.connect(db_config)
 conn = mysql.connector.connect(
     host=HOST,
@@ -28,7 +65,7 @@ conn = mysql.connector.connect(
     database='discgolfdb'
 )
 cursor = conn.cursor()
-# Create a table to store user bags
+# # Create a table to store user bags
 cursor.execute('''CREATE TABLE IF NOT EXISTS bags (
                 user_id TEXT,
                 disc_name TEXT,
