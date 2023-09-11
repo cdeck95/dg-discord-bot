@@ -79,6 +79,36 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS bags (
                 )''')
 conn.commit()
 
+# Function to get a MySQL connection from the pool with reconnection logic
+def get_mysql_connection():
+    try:
+        connection = connection_pool.get_connection()
+        connection.ping(reconnect=True)
+        return connection
+    except mysql.connector.Error as err:
+        print(f"Error getting MySQL connection: {err}")
+        return None
+
+# Function to execute MySQL queries with retries
+def execute_mysql_query(query, *args):
+    max_retries = 3
+    retries = 0
+    while retries < max_retries:
+        try:
+            connection = get_mysql_connection()
+            if connection is not None:
+                cursor = connection.cursor()
+                cursor.execute(query, args)
+                connection.commit()
+                cursor.close()
+                connection.close()
+                return
+        except mysql.connector.Error as err:
+            print(f"Error executing MySQL query: {err}")
+            retries += 1
+    print(f"Max retries reached for query: {query}")
+    raise Exception("Failed to execute MySQL query after max retries")
+
 
 # # Connect to the SQLite database
 # conn = sqlite3.connect('bag_data.db')
@@ -244,12 +274,8 @@ async def add(ctx, *, input_string: str):
         fade = float(fade)
         
         user_id = ctx.author.id
-        print(user_id)
-        print('''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''',
-                       (user_id, disc_name, brand, plastic, speed, glide, turn, fade))
-        cursor.execute('''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s)''',
-                       (user_id, disc_name, brand, plastic, speed, glide, turn, fade))
-        conn.commit()
+        query = '''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
+        execute_mysql_query(query, user_id, disc_name, brand, plastic, speed, glide, turn, fade)
         await ctx.send(f"Added {brand} {disc_name} to your bag.")
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
@@ -372,10 +398,10 @@ async def view_bag(ctx, username: str):
             return
 
         user_id = user.id
-        cursor.execute('''SELECT * FROM bags WHERE user_id = %s''', (user_id,))
-        bag_data = cursor.fetchall()
+        query = '''SELECT * FROM bags WHERE user_id = %s'''
+        result = execute_mysql_query(query, user_id)
 
-        if not bag_data:
+        if not result:
             # Create an embed message for an empty bag
             embed = discord.Embed(title=f"{user.display_name}'s Bag", color=0xff0000)
             # Check if the user has a profile picture and set the thumbnail accordingly
@@ -391,7 +417,7 @@ async def view_bag(ctx, username: str):
             return
 
         # Sort the bag_data by speed in descending order (highest speed first)
-        bag_data.sort(key=lambda x: x[4], reverse=True)
+        result.sort(key=lambda x: x[4], reverse=True)
 
         bag = {
             'Distance Drivers': [],
@@ -400,7 +426,7 @@ async def view_bag(ctx, username: str):
             'Putt/Approach': []
         }
 
-        for disc in bag_data:
+        for disc in result:
             speed = disc[4]
             if speed > 8:
                 bag['Distance Drivers'].append(disc[1])  # Add disc name to the category
