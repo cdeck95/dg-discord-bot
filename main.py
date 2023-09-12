@@ -187,7 +187,6 @@ def execute_select_query(query, *args):
                 cursor.execute(query, args)
                 results = cursor.fetchall()  # Fetch the results
                 conn.commit()
-                cursor.close()  # Close the cursor after fetching results
                 return results
             else:
                 # Reconnect if the connection is lost
