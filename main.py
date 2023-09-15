@@ -313,22 +313,47 @@ def format_bag_detailed(user_id, ctx):
                 bag['Putt/Approach'].append(disc_info)
 
         embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag - Detailed")
-        # Check if the user has a profile picture and set the thumbnail accordingly
         if ctx.author.avatar:
-            print("has avatar")
             embed.set_thumbnail(url=ctx.author.avatar.url)
-        else:
-            # If the user doesn't have a profile picture, you can set it to a default image or the bot's avatar
-            print("does not have avatar")
-            embed.set_thumbnail(url=bot.user.avatar.url)
         for category, discs in bag.items():
             if discs:
-                formatted_discs = "\n".join([f"{i}. {disc}" for i, disc in enumerate(discs, start=1)])
-                embed.add_field(name=category, value=formatted_discs, inline=False)  # Add a field for each category
+                # Initialize the field value as an empty string
+                field_value = ""
+                for i, disc in enumerate(discs, start=1):
+                    # Check if adding the next disc would exceed the character limit
+                    if len(field_value) + len(f"{i}. {disc}\n") > 1024:
+                        # If it does, break and add the field to the embed
+                        embed.add_field(name=category, value=field_value, inline=False)
+                        field_value = ""
+
+                    # Add the disc info to the field value
+                    field_value += f"{i}. {disc}\n"
+
+                # Add any remaining discs as a field
+                if field_value:
+                    embed.add_field(name=category, value=field_value, inline=False)
 
         return embed
     except Exception as e:
         return discord.Embed(description=f"An error occurred: {str(e)}")
+
+    #     embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag - Detailed")
+    #     # Check if the user has a profile picture and set the thumbnail accordingly
+    #     if ctx.author.avatar:
+    #         print("has avatar")
+    #         embed.set_thumbnail(url=ctx.author.avatar.url)
+    #     else:
+    #         # If the user doesn't have a profile picture, you can set it to a default image or the bot's avatar
+    #         print("does not have avatar")
+    #         embed.set_thumbnail(url=bot.user.avatar.url)
+    #     for category, discs in bag.items():
+    #         if discs:
+    #             formatted_discs = "\n".join([f"{i}. {disc}" for i, disc in enumerate(discs, start=1)])
+    #             embed.add_field(name=category, value=formatted_discs, inline=False)  # Add a field for each category
+
+    #     return embed
+    # except Exception as e:
+    #     return discord.Embed(description=f"An error occurred: {str(e)}")
 
 # Command to display user's detailed bag
 @bot.command(name='mybagdetailed')
@@ -553,6 +578,7 @@ async def view_bag(ctx, username: str):
 # Function to execute DELETE MySQL queries with retries
 def execute_delete_query(query, *args):
     global conn
+    global cursor
     max_retries = 3
     retries = 0
     while retries < max_retries:
