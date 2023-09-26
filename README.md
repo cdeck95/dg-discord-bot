@@ -1,4 +1,5 @@
 **Discord Disc Golf Bag Bot**
+
 The Discord Disc Golf Bag Bot is a bot that allows users to manage their disc golf bag within a Discord server. Users can add, remove, and view discs in their bag, categorize them, and even view bag summaries. The bot is designed to sync data across servers and attach it to your Discord username.
 
 **Features**
@@ -27,7 +28,7 @@ The Discord Disc Golf Bag Bot is a bot that allows users to manage their disc go
 Setup
 To invite the Discord Disc Golf Bag Bot to your server and get started, follow these steps:
 
-Invite the Bot: Use the invite link provided to invite the bot to your server.
+Invite the Bot: Use the invite link[https://discord.com/api/oauth2/authorize?client_id=1146901955927613530&permissions=2147534912&scope=bot] provided to invite the bot to your server: https://discord.com/api/oauth2/authorize?client_id=1146901955927613530&permissions=2147534912&scope=bot
 
 Configure Environment Variables: Set up environment variables for the bot's token (DISCORD_TOKEN) and any other necessary credentials (e.g., database credentials).
 
@@ -35,10 +36,7 @@ Run the Bot: Run the provided Python code to start the bot. Make sure you have t
 
 Commands: Use the commands listed above to interact with the bot and manage your disc golf bag.
 
-Additional Information
-Syncing Data: The bot uses a MySQL database to store and sync data across servers. Ensure that the database credentials are correctly set in your environment variables.
 
-Errors: If you encounter any issues or errors while using the bot, please contact the bot administrator for assistance.
+Errors: If you encounter any issues or errors while using the bot, please raise an issue on this github repo.
 
-Enjoy managing your disc golf bag with the Discord Disc Golf Bag Bot!
-https://discord.com/api/oauth2/authorize?client_id=1146901955927613530&permissions=2147534912&scope=bot
+Enjoy managing your disc golf bag with the In The Bag Bot!
