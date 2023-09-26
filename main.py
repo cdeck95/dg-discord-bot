@@ -1,116 +1,3 @@
-# import os
-# import discord
-# from dotenv import load_dotenv
-# from discord.ext import commands
-# import requests
-# import mysql.connector
-# import mysql.connector.pooling  # Import the pooling module
-# import asyncio
-
-# # Credentials
-# load_dotenv()
-# TOKEN = os.getenv('DISCORD_TOKEN')
-# USER = os.getenv('RDS_USER')
-# PASS = os.getenv('RDS_PASSWORD')
-# HOST = os.getenv('RDS_HOST')
-
-# # print(HOST)
-# # print(USER)
-
-
-# # Define a function to create a MySQL connection pool
-# def create_connection_pool():
-#     return mysql.connector.pooling.MySQLConnectionPool(
-#         pool_name="my_pool",
-#         pool_size=5,  # You can adjust this value as needed
-#         user=USER,
-#         password=PASS,
-#         host=HOST,
-#         database='discgolfdb'
-#     )
-
-# # Initialize the connection pool
-# connection_pool = create_connection_pool()
-
-# # Function to get a MySQL connection from the pool
-# def get_mysql_connection():
-#     return connection_pool.get_connection()
-
-# # Function to ping the MySQL server periodically to keep the connection alive
-# def ping_mysql_server():
-#     while True:
-#         try:
-#             connection = get_mysql_connection()
-#             connection.ping(reconnect=True)
-#             connection.close()
-#         except mysql.connector.Error as err:
-#             print(f"Error pinging MySQL server: {err}")
-#         time.sleep(3600)  # Ping every hour
-
-# # Start a separate thread to ping the MySQL server
-# import threading
-# import time
-
-# ping_thread = threading.Thread(target=ping_mysql_server)
-# ping_thread.daemon = True
-# ping_thread.start()
-
-# #conn = mysql.connector.connect(db_config)
-# conn = mysql.connector.connect(
-#     host=HOST,
-#     user=USER,
-#     password=PASS,
-#     database='discgolfdb'
-# )
-# cursor = conn.cursor()
-# # # Create a table to store user bags
-# cursor.execute('''CREATE TABLE IF NOT EXISTS bags (
-#                 user_id TEXT,
-#                 disc_name TEXT,
-#                 brand TEXT,
-#                 plastic TEXT,
-#                 speed REAL,
-#                 glide REAL,
-#                 turn REAL,
-#                 fade REAL
-#                 )''')
-# conn.commit()
-
-# # Function to get a MySQL connection from the pool with reconnection logic
-# def get_mysql_connection():
-#     try:
-#         connection = connection_pool.get_connection()
-#         connection.ping(reconnect=True)
-#         return connection
-#     except mysql.connector.Error as err:
-#         print(f"Error getting MySQL connection: {err}")
-#         return None
-
-# # Function to execute MySQL queries with retries
-# def execute_mysql_query(query, *args):
-#     max_retries = 3
-#     retries = 0
-#     while retries < max_retries:
-#         try:
-#             connection = get_mysql_connection()
-#             if connection is not None:
-#                 cursor = connection.cursor()
-#                 cursor.execute(query, args)
-#                 connection.commit()
-#                 cursor.close()
-#                 connection.close()
-#                 return
-#         except mysql.connector.Error as err:
-#             print(f"Error executing MySQL query: {err}")
-#             retries += 1
-#     print(f"Max retries reached for query: {query}")
-#     raise Exception("Failed to execute MySQL query after max retries")
-
-
-# # Connect to the SQLite database
-# conn = sqlite3.connect('bag_data.db')
-# cursor = conn.cursor()
-
 import os
 import discord
 from dotenv import load_dotenv
@@ -232,14 +119,26 @@ def format_bag(user_id, ctx):
 
         for disc in result:
             speed = disc[4]
-            if speed > 8:
-                bag['Distance Drivers'].append(disc[1])  # Add disc name to the category
-            elif speed > 5:
-                bag['Fairway Drivers'].append(disc[1])
-            elif speed > 4:
-                bag['Mid-Ranges'].append(disc[1])
+            override_category = disc[8]
+            if override_category:
+                category = override_category
+                if category == 'Distance Drivers':
+                    bag['Distance Drivers'].append(disc[1])  # Add disc name to the category
+                elif category == 'Fairway Drivers':
+                    bag['Fairway Drivers'].append(disc[1])
+                elif category == 'Mid-Ranges':
+                    bag['Mid-Ranges'].append(disc[1])
+                else:
+                    bag['Putt/Approach'].append(disc[1])
             else:
-                bag['Putt/Approach'].append(disc[1])
+                if speed > 8:
+                    bag['Distance Drivers'].append(disc[1])  # Add disc name to the category
+                elif speed > 5:
+                    bag['Fairway Drivers'].append(disc[1])
+                elif speed > 4:
+                    bag['Mid-Ranges'].append(disc[1])
+                else:
+                    bag['Putt/Approach'].append(disc[1])
 
         embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag")
         # Check if the user has a profile picture and set the thumbnail accordingly
@@ -293,6 +192,7 @@ def format_bag_detailed(user_id, ctx):
         for disc in result:
             stability = disc[6] + disc[7]
             speed = disc[4]
+            
             if stability < 0:
                 category = 'Understable'
             elif stability == 0:
@@ -303,14 +203,27 @@ def format_bag_detailed(user_id, ctx):
                 category = 'Overstable'
 
             disc_info = f"{disc[1]} [{disc[2]}] - Plastic: {disc[3]}, Speed: {disc[4]}, Glide: {disc[5]}, Turn: {disc[6]}, Fade: {disc[7]} ({category})"
-            if speed > 8:
-                bag['Distance Drivers'].append(disc_info)
-            elif speed > 5:
-                bag['Fairway Drivers'].append(disc_info)
-            elif speed > 4:
-                bag['Mid-Ranges'].append(disc_info)
+            
+            override_category = disc[8]
+            if override_category:
+                category = override_category
+                if category == 'Distance Drivers':
+                    bag['Distance Drivers'].append(disc_info)
+                elif category == 'Fairway Drivers':
+                    bag['Fairway Drivers'].append(disc_info)
+                elif category == 'Mid-Ranges':
+                    bag['Mid-Ranges'].append(disc_info)
+                else:
+                    bag['Putt/Approach'].append(disc_info)
             else:
-                bag['Putt/Approach'].append(disc_info)
+                if speed > 8:
+                    bag['Distance Drivers'].append(disc_info)
+                elif speed > 5:
+                    bag['Fairway Drivers'].append(disc_info)
+                elif speed > 4:
+                    bag['Mid-Ranges'].append(disc_info)
+                else:
+                    bag['Putt/Approach'].append(disc_info)
 
         embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag - Detailed")
         if ctx.author.avatar:
@@ -337,24 +250,6 @@ def format_bag_detailed(user_id, ctx):
     except Exception as e:
         return discord.Embed(description=f"An error occurred: {str(e)}")
 
-    #     embed = discord.Embed(title=f"{ctx.author.display_name}'s Bag - Detailed")
-    #     # Check if the user has a profile picture and set the thumbnail accordingly
-    #     if ctx.author.avatar:
-    #         print("has avatar")
-    #         embed.set_thumbnail(url=ctx.author.avatar.url)
-    #     else:
-    #         # If the user doesn't have a profile picture, you can set it to a default image or the bot's avatar
-    #         print("does not have avatar")
-    #         embed.set_thumbnail(url=bot.user.avatar.url)
-    #     for category, discs in bag.items():
-    #         if discs:
-    #             formatted_discs = "\n".join([f"{i}. {disc}" for i, disc in enumerate(discs, start=1)])
-    #             embed.add_field(name=category, value=formatted_discs, inline=False)  # Add a field for each category
-
-    #     return embed
-    # except Exception as e:
-    #     return discord.Embed(description=f"An error occurred: {str(e)}")
-
 # Command to display user's detailed bag
 @bot.command(name='mybagdetailed')
 async def mybagdetailed(ctx):
@@ -367,10 +262,38 @@ async def mybagdetailed(ctx):
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
 
+# Command to override the category of a disc in the user's bag
+@bot.command(name='override')
+async def override(ctx, *, args):
+    try:
+        # Split the arguments using a comma as the separator
+        arguments = [arg.strip() for arg in args.split(',')]
+
+        # Check if there are enough arguments
+        if len(arguments) < 2:
+            await ctx.send("Invalid input. Please provide at least 2 arguments: disc_name, overridden_category.")
+            return
+
+        # Extract the arguments
+        disc_name = arguments[0]
+        overridden_category = arguments[1]
+
+        # Join the remaining arguments (if any) as a single string
+        other_args = ", ".join(arguments[2:])
+
+        user_id = ctx.author.id
+        if overridden_category == 'Distance Drivers' or overridden_category == 'Fairway Drivers' or overridden_category == 'Mid-Ranges' or overridden_category == 'Putt/Approach':
+            query = '''UPDATE bags SET overridden_category = %s WHERE user_id = %s AND lower(disc_name) = %s'''
+            execute_mysql_query(query, overridden_category, user_id, disc_name.lower())
+            await ctx.send(f"Overridden category for {disc_name} is now: {overridden_category}")
+        else:
+            await ctx.send(f"Invalid category. Please enter a valid category: Distance Drivers, Fairway Drivers, Mid-Ranges, or Putt/Approach")
+    except Exception as e:
+        await ctx.send(f"An error occurred: {str(e)}")
 
 # Command to add a disc to the user's bag
 @bot.command(name='add')
-async def add(ctx, *, input_string: str):
+async def add(ctx, *, input_string: str, overridden_category: str = None):
     try:
         # Split the input string using commas as the delimiter
         parts = [part.strip() for part in input_string.split(',')]
@@ -390,9 +313,13 @@ async def add(ctx, *, input_string: str):
         fade = float(fade)
         
         user_id = ctx.author.id
-        query = '''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
-        execute_mysql_query(query, user_id, disc_name, brand, plastic, speed, glide, turn, fade)
-        await ctx.send(f"Added {brand} {disc_name} to your bag.")
+        query = '''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+        execute_mysql_query(query, user_id, disc_name, brand, plastic, speed, glide, turn, fade, overridden_category)
+
+        if overridden_category:
+            await ctx.send(f"Added {brand} {disc_name} to your bag with overridden category: {overridden_category}")
+        else:
+            await ctx.send(f"Added {brand} {disc_name} to your bag.")
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
 
@@ -462,14 +389,18 @@ def bag_summary(user_id, ctx):
             stability = disc[6] + disc[7]
             speed = disc[4]
             manufacturer = disc[2]  
-            if speed > 8:
-                type = 'Distance Drivers'
-            elif speed > 5:
-                type = 'Fairway Drivers'
-            elif speed > 4:
-                type = 'Mid-Ranges'
+            override_category = disc[8]
+            if override_category:
+                type = override_category
             else:
-                type = 'Putt/Approach'
+                if speed > 8:
+                    type = 'Distance Drivers'
+                elif speed > 5:
+                    type = 'Fairway Drivers'
+                elif speed > 4:
+                    type = 'Mid-Ranges'
+                else:
+                    type = 'Putt/Approach'
             if stability < 0:
                 category = 'Understable'
             elif stability == 0:
@@ -561,14 +492,26 @@ async def view_bag(ctx, username: str):
 
         for disc in result:
             speed = disc[4]
-            if speed > 8:
-                bag['Distance Drivers'].append(disc[1])  # Add disc name to the category
-            elif speed > 5:
-                bag['Fairway Drivers'].append(disc[1])
-            elif speed > 4:
-                bag['Mid-Ranges'].append(disc[1])
+            override_category = disc[8]
+            if override_category:
+                category = override_category
+                if category == 'Distance Drivers':
+                    bag['Distance Drivers'].append(disc[1])  # Add disc name to the category
+                elif category == 'Fairway Drivers':
+                    bag['Fairway Drivers'].append(disc[1])
+                elif category == 'Mid-Ranges':
+                    bag['Mid-Ranges'].append(disc[1])
+                else:
+                    bag['Putt/Approach'].append(disc[1])
             else:
-                bag['Putt/Approach'].append(disc[1])
+                if speed > 8:
+                    bag['Distance Drivers'].append(disc[1])  # Add disc name to the category
+                elif speed > 5:
+                    bag['Fairway Drivers'].append(disc[1])
+                elif speed > 4:
+                    bag['Mid-Ranges'].append(disc[1])
+                else:
+                    bag['Putt/Approach'].append(disc[1])
 
         embed = discord.Embed(title=f"{user.display_name}'s Bag")
         if user.avatar:
