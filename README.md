@@ -18,19 +18,24 @@ The Discord Disc Golf Bag Bot is a bot that allows users to manage their disc go
 
 **Commands**
 **`!mybag`:** View your disc golf bag.
-!mybagdetailed: View your disc golf bag with detailed information.
-!add <disc_details>: Add a disc to your bag (e.g., !add Disc Name, Brand, Plastic, Speed, Glide, Turn, Fade).
-!addMultiple <disc_details1; disc_details2; ...>: Add multiple discs to your bag at once.
-!removeDisc <disc_name>: Remove a disc from your bag.
-!override <disc_name>, <category>: Override the category of a disc in your bag.
-!bagSummary: View a summary of your disc golf bag.
-!bag <username>: View someone else's disc golf bag by specifying their username.
-Setup
-To invite the Discord Disc Golf Bag Bot to your server and get started, follow these steps:
 
-Invite the Bot: Use the invite link provided to invite the bot to your server: https://discord.com/api/oauth2/authorize?client_id=1146901955927613530&permissions=2147534912&scope=bot
+**!mybagdetailed: **View your disc golf bag with detailed information.
+
+**!add <disc_details>:** Add a disc to your bag (e.g., !add Disc Name, Brand, Plastic, Speed, Glide, Turn, Fade).
+
+**!addMultiple <disc_details1; disc_details2; ...>:** Add multiple discs to your bag at once.
+
+**!removeDisc <disc_name>**: Remove a disc from your bag.
+
+**!override <disc_name>, <category>:** Override the category of a disc in your bag.
+
+**!bagSummary:** View a summary of your disc golf bag.
+
+**!bag <username>:** View someone else's disc golf bag by specifying their username.
+
+**Invite the Bot:** Use the invite link provided to invite the bot to your server: https://discord.com/api/oauth2/authorize?client_id=1146901955927613530&permissions=2147534912&scope=bot
 
 
-Errors: If you encounter any issues or errors while using the bot, please raise an issue on this github repo.
+**Errors:** If you encounter any issues or errors while using the bot, please raise an issue on this github repo.
 
 Enjoy managing your disc golf bag with the In The Bag discord bot!
