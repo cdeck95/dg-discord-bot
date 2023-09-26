@@ -291,6 +291,43 @@ async def override(ctx, *, args):
     except Exception as e:
         await ctx.send(f"An error occurred: {str(e)}")
 
+@bot.command(name='overrideMultiple')
+async def override_multiple(ctx, *, args):
+    try:
+        # Split the arguments using a comma as the separator
+        arguments = [arg.strip() for arg in args.split(',')]
+
+        # Check if there are enough arguments
+        if len(arguments) % 2 != 0:
+            embed = discord.Embed(title="Update Multiple Disc Categories", color=discord.Color.red())
+            embed.add_field(name="Error", value="Invalid input. Please provide pairs of disc_name and new_category separated by commas.")
+            await ctx.send(embed=embed)
+            return
+
+        # Initialize lists to store disc_name and new_category pairs
+        disc_name_list = []
+        new_category_list = []
+
+        # Extract disc_name and new_category pairs
+        for i in range(0, len(arguments), 2):
+            disc_name_list.append(arguments[i])
+            new_category_list.append(arguments[i + 1])
+
+        # Update the categories in the database
+        user_id = ctx.author.id
+        query = '''UPDATE bags SET overridden_category = %s WHERE user_id = %s AND LOWER(disc_name) = LOWER(%s)'''
+        for disc_name, new_category in zip(disc_name_list, new_category_list):
+            execute_mysql_query(query, new_category, user_id, disc_name)
+
+        embed = discord.Embed(title="Update Multiple Disc Categories", color=discord.Color.green())
+        embed.add_field(name="Success", value="Categories updated successfully.")
+        await ctx.send(embed=embed)
+    except Exception as e:
+        embed = discord.Embed(title="Update Multiple Disc Categories", color=discord.Color.red())
+        embed.add_field(name="Error", value=f"An error occurred: {str(e)}")
+        await ctx.send(embed=embed)
+
+
 # Command to add a disc to the user's bag
 @bot.command(name='add')
 async def add(ctx, *, input_string: str, overridden_category: str = None):
