@@ -271,7 +271,12 @@ async def override(ctx, *, args):
 
         # Check if there are enough arguments
         if len(arguments) < 2:
-            await ctx.send("Invalid input. Please provide at least 2 arguments: disc_name, overridden_category.")
+            embed = discord.Embed(
+                title="Invalid Input",
+                description="Please provide at least 2 arguments: disc_name, overridden_category.",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
             return
 
         # Extract the arguments
@@ -285,11 +290,26 @@ async def override(ctx, *, args):
         if overridden_category == 'Distance Drivers' or overridden_category == 'Fairway Drivers' or overridden_category == 'Mid-Ranges' or overridden_category == 'Putt/Approach':
             query = '''UPDATE bags SET overridden_category = %s WHERE user_id = %s AND lower(disc_name) = %s'''
             execute_mysql_query(query, overridden_category, user_id, disc_name.lower())
-            await ctx.send(f"Overridden category for {disc_name} is now: {overridden_category}")
+            embed = discord.Embed(
+                title="Category Overridden",
+                description=f"Overridden category for {disc_name} is now: {overridden_category}",
+                color=discord.Color.green()
+            )
+            await ctx.send(embed=embed)
         else:
-            await ctx.send(f"Invalid category. Please enter a valid category: Distance Drivers, Fairway Drivers, Mid-Ranges, or Putt/Approach")
+            embed = discord.Embed(
+                title="Invalid Category",
+                description="Please enter a valid category: Distance Drivers, Fairway Drivers, Mid-Ranges, or Putt/Approach",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
     except Exception as e:
-        await ctx.send(f"An error occurred: {str(e)}")
+        embed = discord.Embed(
+            title="Error",
+            description=f"An error occurred: {str(e)}",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
 
 @bot.command(name='overrideMultiple')
 async def override_multiple(ctx, *, args):
@@ -337,7 +357,12 @@ async def add(ctx, *, input_string: str, overridden_category: str = None):
         
         # Check if there are enough parts (name, brand, plastic, speed, glide, turn, fade)
         if len(parts) != 7:
-            await ctx.send("Invalid input. Please provide disc name, brand, plastic, speed, glide, turn, and fade.")
+            embed = discord.Embed(
+                title="Invalid Input",
+                description="Please provide disc name, brand, plastic, speed, glide, turn, and fade.",
+                color=discord.Color.red()
+            )
+            await ctx.send(embed=embed)
             return
         
         # Extract the individual fields
@@ -354,11 +379,25 @@ async def add(ctx, *, input_string: str, overridden_category: str = None):
         execute_mysql_query(query, user_id, disc_name, brand, plastic, speed, glide, turn, fade, overridden_category)
 
         if overridden_category:
-            await ctx.send(f"Added {brand} {disc_name} to your bag with overridden category: {overridden_category}")
+            embed = discord.Embed(
+                            title="Disc Added",
+                            description=f"Added {brand} {disc_name} to your bag with overridden category: {overridden_category}",
+                            color=discord.Color.green()
+                        )        
         else:
-            await ctx.send(f"Added {brand} {disc_name} to your bag.")
+            embed = discord.Embed(
+                    title="Disc Added",
+                    description=f"Added {brand} {disc_name} to your bag.",
+                    color=discord.Color.green()
+                )
+        await ctx.send(embed=embed)
     except Exception as e:
-        await ctx.send(f"An error occurred: {str(e)}")
+        embed = discord.Embed(
+            title="Error",
+            description=f"An error occurred: {str(e)}",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
 
 # Command to add multiple discs to the user's bag with a semicolon delimiter
 @bot.command(name='addMultiple')
@@ -595,14 +634,47 @@ def execute_delete_query(query, *args):
 
 # Command to remove a disc from the user's bag (accepts multiple words in disc name)
 @bot.command(name='removeDisc')
-async def remove(ctx, *, disc_name):
+async def remove(ctx, disc_name, *, countToRemove=None):
     try:
         user_id = ctx.author.id
+        # Remove any commas from disc_name
+        disc_name = disc_name.replace(',', '')
         query = '''DELETE FROM bags WHERE user_id = %s AND lower(disc_name) = %s'''
-        execute_delete_query(query, user_id, disc_name.lower())
-        await ctx.send(f"Removed {disc_name} from your bag.")
+        
+        if countToRemove is not None:
+            countToRemove = int(countToRemove)  # Ensure countToRemove is an integer
+            if countToRemove == 1:
+                query += ' LIMIT 1'
+                execute_delete_query(query, user_id, disc_name.lower())
+                embed = discord.Embed(
+                    title="Disc Removed",
+                    description=f"Removed the first occurrence of {disc_name} from your bag.",
+                    color=discord.Color.green()
+                )
+            else:
+                query += ' LIMIT %s'
+                execute_delete_query(query, user_id, disc_name.lower(), countToRemove)
+                embed = discord.Embed(
+                    title="Disc Removed",
+                    description=f"Removed the first {countToRemove} occurrences of {disc_name} from your bag.",
+                    color=discord.Color.green()
+                )
+        else:
+            execute_delete_query(query, user_id, disc_name.lower())  # Remove LIMIT if countToRemove is not specified
+            embed = discord.Embed(
+                title="Disc Removed",
+                description=f"Removed all occurrences of {disc_name} from your bag.",
+                color=discord.Color.green()
+            )
+        
+        await ctx.send(embed=embed)
     except Exception as e:
-        await ctx.send(f"An error occurred: {str(e)}")
+        embed = discord.Embed(
+            title="Error",
+            description=f"An error occurred: {str(e)}",
+            color=discord.Color.red()
+        )
+        await ctx.send(embed=embed)
 
     
 # Run the bot
