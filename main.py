@@ -283,6 +283,9 @@ async def override(ctx, *, args):
         disc_name = arguments[0]
         overridden_category = arguments[1]
 
+        valid_categories = ['Distance Drivers', 'Fairway Drivers', 'Mid-Ranges', 'Putt/Approach']
+
+
         # Join the remaining arguments (if any) as a single string
         other_args = ", ".join(arguments[2:])
 
@@ -299,7 +302,7 @@ async def override(ctx, *, args):
         else:
             embed = discord.Embed(
                 title="Invalid Category",
-                description="Please enter a valid category: Distance Drivers, Fairway Drivers, Mid-Ranges, or Putt/Approach",
+                description=f"Invalid category: {overridden_category}. Please use one of {', '.join(valid_categories)}.",
                 color=discord.Color.red()
             )
             await ctx.send(embed=embed)
@@ -328,10 +331,22 @@ async def override_multiple(ctx, *, args):
         disc_name_list = []
         new_category_list = []
 
+        # Define valid categories
+        valid_categories = ['Distance Drivers', 'Fairway Drivers', 'Mid-Ranges', 'Putt/Approach']
+
         # Extract disc_name and new_category pairs
         for i in range(0, len(arguments), 2):
             disc_name_list.append(arguments[i])
-            new_category_list.append(arguments[i + 1])
+            new_category = arguments[i + 1]
+
+            # Check if the new_category is valid
+            if new_category not in valid_categories:
+                embed = discord.Embed(title="Update Multiple Disc Categories", color=discord.Color.red())
+                embed.add_field(name="Error", value=f"Invalid category: {new_category}. Please use one of {', '.join(valid_categories)}.")
+                await ctx.send(embed=embed)
+                return
+
+            new_category_list.append(new_category)
 
         # Update the categories in the database
         user_id = ctx.author.id
