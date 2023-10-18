@@ -414,7 +414,11 @@ async def add(ctx, *, input_string: str, overridden_category: str = None):
         )
         await ctx.send(embed=embed)
 
-# Command to add multiple discs to the user's bag with a semicolon delimiter
+# Function to create a Discord embed
+def create_discord_embed(description, color=discord.Color.green()):
+    embed = discord.Embed(description=description, color=color)
+    return embed
+
 @bot.command(name='addMultiple')
 async def add_multiple(ctx, *, input_string: str):
     try:
@@ -426,12 +430,19 @@ async def add_multiple(ctx, *, input_string: str):
             parts = [part.strip() for part in disc_string.split(',')]
 
             # Check if there are enough parts (name, brand, plastic, speed, glide, turn, fade)
-            if len(parts) != 7:
+            if len(parts) < 7:
                 await ctx.send(f"Invalid input: {disc_string}. Please provide disc name, brand, plastic, speed, glide, turn, and fade for each disc.")
                 continue
 
             # Extract the individual fields
             disc_name, brand, plastic, speed, glide, turn, fade = parts
+            print(f"Disc name: {disc_name}")
+            print(f"Brand: {brand}")
+            print(f"Plastic: {plastic}")
+            print(f"Speed: {speed}")
+            print(f"Glide: {glide}")
+            print(f"Turn: {turn}")
+            print(f"Fade: {fade}")
 
             # Convert speed, glide, turn, and fade to float
             speed = float(speed)
@@ -440,12 +451,13 @@ async def add_multiple(ctx, *, input_string: str):
             fade = float(fade)
 
             user_id = ctx.author.id
-            query = '''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
-            execute_mysql_query(query, user_id, disc_name, brand, plastic, speed, glide, turn, fade)
-            await ctx.send(f"Added {brand} {disc_name} to your bag.")
+            query = '''INSERT INTO bags VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+            execute_mysql_query(query, user_id, disc_name, brand, plastic, speed, glide, turn, fade, None)
+
+            await ctx.send(embed=create_discord_embed(f"Added {brand} {disc_name} to your bag."))
 
     except Exception as e:
-        await ctx.send(f"An error occurred: {str(e)}")
+        await ctx.send(embed=create_discord_embed(f"An error occurred: {str(e)}", color=discord.Color.red()))
 
 
 
@@ -649,12 +661,23 @@ def execute_delete_query(query, *args):
 
 # Command to remove a disc from the user's bag (accepts multiple words in disc name)
 @bot.command(name='removeDisc')
-async def remove(ctx, disc_name, *, countToRemove=None):
+async def remove(ctx, *, args):
     try:
+        # user_id = ctx.author.id
+        # # Remove any commas from disc_name
+        # disc_name = disc_name.replace(',', '')
+
         user_id = ctx.author.id
+        # Split the input into disc_name and countToRemove (if provided)
+        parts = args.split(',')
+        disc_name = parts[0].strip()
+        countToRemove = parts[1].strip() if len(parts) > 1 else None
+
         # Remove any commas from disc_name
         disc_name = disc_name.replace(',', '')
+
         query = '''DELETE FROM bags WHERE user_id = %s AND lower(disc_name) = %s'''
+
         
         if countToRemove is not None:
             countToRemove = int(countToRemove)  # Ensure countToRemove is an integer
