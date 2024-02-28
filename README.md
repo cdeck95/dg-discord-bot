@@ -28,6 +28,6 @@ Invite the **In The Bag Discord Bot** to your server using this ![Invite Badge](
 
 ## Errors 🐛
 
-Encountered issues or errors with the bot? Please [raise an issue]([https://github.com/cdeck95/dg-discord-bot/issues]) on our GitHub repository.
+Encountered issues or errors with the bot? Please [raise an issue](https://github.com/cdeck95/dg-discord-bot/issues) on our GitHub repository.
 
 *Enjoy managing your disc golf bag with the In The Bag Discord bot!* 🎉
