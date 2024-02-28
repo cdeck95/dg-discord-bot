@@ -1,41 +1,33 @@
-**In The Bag - Discord Bot**
+# In The Bag - Discord Bot 🥏
 
-The Discord Disc Golf Bag Bot is a bot that allows users to manage their disc golf bag within a Discord server. Users can add, remove, and view discs in their bag, categorize them, and even view bag summaries. The bot is designed to sync data across servers and attach it to your Discord username.
+The **Discord Disc Golf Bag Bot** is a dedicated bot that enhances the disc golf community experience within Discord servers 🌐. It enables users to meticulously manage their disc golf bags, offering functionalities like adding or removing discs, categorizing them, and viewing bag summaries 📊. Designed to seamlessly sync data across servers, the bot links all information to your Discord username, ensuring accessibility and convenience.
 
-**Features**
+## Features 🚀
 
-**Add Discs:** Users can add discs to their bag with details such as disc name, brand, plastic, speed, glide, turn, and fade.
+- **Add Discs:** Seamlessly add discs with details including name, brand, plastic-type, and flight ratings (speed, glide, turn, fade) 📝.
+- **Categorization:** Automatically sorts discs into categories (Distance Drivers, Fairway Drivers, Mid-Ranges, Putt/Approach), with the option for manual categorization 🔍.
+- **View Bag:** Offers both a simple list view and a detailed view showcasing disc attributes 📋.
+- **Bag Summary:** Provides an overview of your bag, highlighting the total count of discs and their distribution across stability categories 📈.
+- **Remove Discs:** Allows for the easy removal of discs from your bag 🗑️.
+- **Sync Across Servers:** Ensures your disc bag data remains consistent and accessible across various Discord servers 🔗.
 
-**Categorization:** The bot automatically categorizes discs into four categories: Distance Drivers, Fairway Drivers, Mid-Ranges, and Putt/Approach. Users can also override the category of a disc if needed.
+## Commands ⌨️
 
-**View Bag:** Users can view the discs in their bag, either as a simple list or as a detailed list with disc attributes.
+- **`!mybag`**: Displays your disc golf bag.
+- **`!mybagdetailed`**: Presents a detailed view of your disc golf bag.
+- **`!add <disc_details>`**: Adds a disc to your bag. Example usage: `!add Disc Name, Brand, Plastic, Speed, Glide, Turn, Fade`.
+- **`!addMultiple <disc_details1; disc_details2; ...>`**: Adds multiple discs to your bag in one go.
+- **`!removeDisc <disc_name>`**: Removes a specified disc from your bag.
+- **`!override <disc_name>, <category>`**: Overrides the default category of a disc.
+- **`!bagSummary`**: Shows a summary of your disc golf bag.
+- **`!bag <username>`**: Views another user's disc golf bag by specifying their username.
 
-**Bag Summary:** Users can see a summary of their bag, including the count of discs in each category and their stability categories.
+## Invite the Bot 🤖
 
-**Remove Discs:** Users can remove discs from their bag.
+Invite the **In The Bag Discord Bot** to your server using this ![Invite Badge](https://img.shields.io/badge/Invite%20Bot-Discord-blueviolet?style=flat-square&logo=discord) [invite link](https://discord.com/api/oauth2/authorize?client_id=1146901955927613530&permissions=2147534912&scope=bot).
 
-**Sync Across Servers:** The bot ensures that your disc bag data is accessible across different Discord servers.
+## Errors 🐛
 
-**Commands**
-**`!mybag`:** View your disc golf bag.
+Encountered issues or errors with the bot? Please [raise an issue]([https://github.com/cdeck95/dg-discord-bot/issues]) on our GitHub repository.
 
-**!mybagdetailed: **View your disc golf bag with detailed information.
-
-**!add <disc_details>:** Add a disc to your bag (e.g., !add Disc Name, Brand, Plastic, Speed, Glide, Turn, Fade).
-
-**!addMultiple <disc_details1; disc_details2; ...>:** Add multiple discs to your bag at once.
-
-**!removeDisc <disc_name>**: Remove a disc from your bag.
-
-**!override <disc_name>, <category>:** Override the category of a disc in your bag.
-
-**!bagSummary:** View a summary of your disc golf bag.
-
-**!bag <username>:** View someone else's disc golf bag by specifying their username.
-
-**Invite the Bot:** Use the invite link provided to invite the bot to your server: https://discord.com/api/oauth2/authorize?client_id=1146901955927613530&permissions=2147534912&scope=bot
-
-
-**Errors:** If you encounter any issues or errors while using the bot, please raise an issue on this github repo.
-
-Enjoy managing your disc golf bag with the In The Bag discord bot!
+*Enjoy managing your disc golf bag with the In The Bag Discord bot!* 🎉
